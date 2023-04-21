@@ -1,0 +1,71 @@
+services:
+  db:
+    image: postgres:14.2-alpine
+    container_name: alertsystem-postgres-14.2
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    command: "postgres -c 'max_connections=500'"
+    environment:
+      POSTGRES_DB: alert_system_development
+      POSTGRES_USER: my_user
+      POSTGRES_PASSWORD: ILoveDoingKnowBe4Training!
+    ports:
+      - "5432:5432"
+  redis_db:
+    container_name: alertsystem-redis
+    image: redis:7.0
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_db:/var/lib/redis/data
+  sidekiq_websocket:
+    container_name: alertsystem-sidekiq-websocket
+    build:
+      context: .
+    command: bundle exec sidekiq -C config/sidekiq-websocket.yml -e development
+    volumes:
+      - .:/usr/src/sidekiq_websocket/app
+    links:
+      - db
+      - redis_db
+    environment:
+      DB_HOST: db
+      DB_NAME: alert_system_development
+      DB_USERNAME: my_user
+      DB_PASSWORD: ILoveDoingKnowBe4Training!
+      SOCKET_ENABLED: true
+  sidekiq:
+    container_name: alertsystem-sidekiq
+    build:
+      context: .
+    command: bundle exec sidekiq -C config/sidekiq.yml -e development
+    volumes:
+      - .:/usr/src/sidekiq/app
+    links:
+      - db
+      - redis_db
+    environment:
+      DB_HOST: db
+      DB_NAME: alert_system_development
+      DB_USERNAME: my_user
+      DB_PASSWORD: ILoveDoingKnowBe4Training!
+  web:
+    container_name: alertsystem-web
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/usr/src/app
+    environment:
+      DB_HOST: db
+      DB_NAME: alert_system_development
+      DB_USERNAME: my_user
+      DB_PASSWORD: ILoveDoingKnowBe4Training!
+    links:
+      - redis_db
+      - db
+    entrypoint: ["./lib/docker/entrypoint.sh"]
+    command: rails s -b 0.0.0.0
+volumes:
+  redis_db:
+  postgres_data:
