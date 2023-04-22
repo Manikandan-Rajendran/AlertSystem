@@ -1,7 +1,7 @@
 
 # Step to run the project -- docker-compose up
 
-## All the API will be exposed on localhost:3000
+## All the API will be exposed on localhost:3000.
 
 
 # Login API documentation
@@ -226,7 +226,7 @@ BinanceWebsocketServer-->WebsocketWorker: Sends Realtime update of trade stream 
 Note right of WebsocketWorker: Checks for alert condition with realtime data
 WebsocketWorker->SidekiqWorker: Enqueue Alert processing worker when condition met
 WebsocketWorker->BinanceWebsocketServer: Send Unsubscribe request if no more alert for that Coin X
-SidekiqWorker->User: Sent Email
+SidekiqWorker->User: Sent Email(Currently Logging in log file)
 SidekiqWorker->Application: update alert that it was triggered
 ```
 
